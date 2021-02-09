@@ -8,7 +8,6 @@ configParser = configparser.RawConfigParser()
 configFilePath = r'D:\Projects\Configs\atradconfig.txt'
 configParser.read(configFilePath)
 
-
 username = configParser.get('atrad-config', 'username')
 password = configParser.get('atrad-config', 'password')
 clientAcc = configParser.get('atrad-config', 'clientAcc')
@@ -55,8 +54,15 @@ def checksecuritiestosell (my_portfolio_obj_list):
 
     for my_portfolio_obj in my_portfolio_obj_list:
 
-        orderbook_url = "https://atrad.lsl.lk/atsweb/marketdetails?action=getOrderBook&format=json&security="+my_portfolio_obj.security+"&board=1"
-        r = atradSession.get(orderbook_url)
+        url = "https://atrad.lsl.lk/atsweb/marketdetails"
+        payload = {
+            "action" : "getOrderBook",
+            "format" : "json",
+            "security" : prospect,
+            "board" : "1"
+        }
+        headers = {}
+        r = atradSession.get(url, data=payload, headers=headers)
         json_data = json.loads(r.text.replace("'", '"'))
 
         list_of_bids = []
@@ -102,8 +108,15 @@ def checksecuritiestosell (my_portfolio_obj_list):
 def checksecuritiestobuy(myProspects) :
     
     for prospect in myProspects:
-        orderbook_url = "https://atrad.lsl.lk/atsweb/marketdetails?action=getOrderBook&format=json&security="+prospect+"&board=1"
-        r = atradSession.get(orderbook_url)
+        url = "https://atrad.lsl.lk/atsweb/marketdetails"
+        payload = {
+            "action" : "getOrderBook",
+            "format" : "json",
+            "security" : prospect,
+            "board" : "1"
+        }
+        headers = {}
+        r = atradSession.get(url, data=payload, headers=headers)
         json_data = json.loads(r.text.replace("'", '"'))
 
         #print(json_data['data']['orderbook'][0]['totalask'])
@@ -119,9 +132,21 @@ def checksecuritiestobuy(myProspects) :
 
         lowest_ask = list_of_asks[0]
 
-        statistic_url = "https://atrad.lsl.lk/atsweb/marketdetails?action=getStatisticOfSec&format=json&market=CSE&security="+prospect+"&bookdefid=1"
-        r = atradSession.get(orderbook_url)
+
+def get_statistics(prospect):
+        url = "https://atrad.lsl.lk/atsweb/marketdetails"
+        payload = {
+            "action" : "getStatisticOfSec",
+            "format" : "json",
+            "market" : "CSE",
+            "security": prospect,
+            "bookdefid" : "1"
+        }
+        headers = {}
+        r = atradSession.get(url,data=payload, headers=headers)
         json_data = json.loads(r.text.replace("'", '"'))
+
+        print(r.content)
 
 
 def get_portfolio():
@@ -150,6 +175,58 @@ def get_portfolio():
 
     return list_of_portfolios
 
+def sell_order(security,qty,price):
+
+    url = 'https://atrad.lsl.lk/atsweb/order'
+    payload = {
+   "action":"submitOrder",
+   "market":"CSE",
+   "broker":broker,
+   "format":"json",
+   "clientOrderId":"",
+   "cseOrderId":"",
+   "brokerClient":"1",
+   "orderStatus":"Regular Trading", #Regular Trading?
+   "filledQty": "",
+   "acntid":acntid,
+   "oldPrice": "",
+   "oldQty": "",
+   "remainder": "",
+   "orderplacedate": "",
+   "marketPrice": "", #current market price
+   "oldDisclose":"",
+   "txtContraBroker":"",
+   "txtapprovalReason":"",
+   "txtsenttoapproval":"no",
+   "txtCompId":"",
+   "txtOdrStatus":"",
+   "clientAcc":clientAcc,
+   "cmbClientAcc_end":"",
+   "assetSelect":"1",
+   "actionSelect":"2", #Sell
+   "txtSecurity":security,
+   "cmbBoard":"1",
+   "spnQuantity":qty,
+   "spnPrice":price,
+   "spnMinFillQuantity":"0",
+   "spnDisclose":qty,
+   "cmbOrderType":"2",
+   "cmbTif":"0",
+   "cmbTifDays":"1",
+   "spnYeild":"0",
+   "spnEffectiveYield":"0",
+   "hiddenSpnCseFee":"0.02",
+   "spnCommission":"0",
+   "txtTradeId":"",
+   "brokerClientVal":"1",
+   "confirm":"1"
+    }
+
+    headers = {}
+    r = atradSession.post(url, data=payload, headers=headers)
+    ## handle response code
+    print(r.content)
+
 
 def buy_order(security,qty,price):
 
@@ -163,7 +240,7 @@ def buy_order(security,qty,price):
    "clientOrderId":"",
    "cseOrderId":"",
    "brokerClient":"1",
-   "orderStatus":"Close",
+   "orderStatus":"Regular Trading", #Regular Trading
    "filledQty": "",
    "acntid":acntid,
    "oldPrice": "",
@@ -204,6 +281,27 @@ def buy_order(security,qty,price):
     ## handle response code
     print(r.content)
 
+def get_orderblotter():
+
+    list_of_portfolios = []
+    
+    url = "https://atrad.lsl.lk/atsweb/order"
+    payload = {
+    "action": "getBlotterData",
+    "format": "json",
+    "clientAcc": "all",
+    "exchange": "all",
+    "ordStatus": "all",
+    "ordType" : "all",
+    "lstUpdateTime" : "",
+    "assetClass": "all"
+    }
+    headers = {}
+    r = atradSession.get(url,data=payload, headers=headers)
+    json_data = json.loads(r.text.replace("'", '"'))
+
+    print(r.content)
+
 
 myProspects = ['BIL.N0000']
 
@@ -225,15 +323,17 @@ print(r.cookies)
 print("**********")
 
 
+#get_orderblotter()
+get_statistics('EBCR.N0000')
+#buy_order('EBCR.N0000',100, 50)
+#sell_order('BIL.N0000',1, 6.40)
+# my_portfolio_obj_list = get_portfolio()
 
-#buy_order('BIL.N0000',10,6.20)
-my_portfolio_obj_list = get_portfolio()
+# while (1) :
 
-while (1) :
-
-        checksecuritiestosell(my_portfolio_obj_list)
-        ##checksecuritiestobuy(myProspects)
-        time.sleep(5)
+#         checksecuritiestosell(my_portfolio_obj_list)
+#         ##checksecuritiestobuy(myProspects)
+#         time.sleep(5)
 
 
 
