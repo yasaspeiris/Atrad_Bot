@@ -1,0 +1,6 @@
+[atrad-config]
+username=<your username>
+password=<your password>
+clientAcc=<your client account>
+acntid=<your account id>
+broker=<your broker>

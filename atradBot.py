@@ -2,7 +2,6 @@ import requests
 import json
 from playsound import playsound
 import pandas
-import matplotlib
 
 class Session:
 

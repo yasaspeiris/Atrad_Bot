@@ -1,7 +1,8 @@
 import time
 import atradBot
-
+from datetime import datetime
 import configparser
+import matplotlib
 configParser = configparser.RawConfigParser()   
 configFilePath = r'/Users/samira/Documents/Projects/Configs/atradconfig.txt'
 configParser.read(configFilePath)
@@ -17,8 +18,10 @@ atradsession = atradBot.Session(username,password,clientAcc,acntid,broker)
 atradsession.login()
 my_portfolio = atradsession.get_portfolio()
 
-#atradsession.get_statistics("EBCR.N0000")
+atradsession.get_statistics("EBCR.N0000")
 atradsession.get_intra_day_data("BIL.N0000")
+
+
 
 
 
